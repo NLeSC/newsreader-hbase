@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -23,6 +24,7 @@ public class Directory2Hbase {
     public static void main(String[] args) throws IOException {
 //        Path rootPath = Paths.get(args[0]);
         Path rootPath = Paths.get("/home/stefanv/data/newsreader/2000-medium-docs-en/docs/output/");
+        System.out.println("Source " + rootPath.toString());
 
         initHBase();
 
@@ -49,10 +51,11 @@ public class Directory2Hbase {
 
     private static void initHBase() throws IOException {
         Configuration config = HBaseConfiguration.create();
-        HBaseAdmin admin = new HBaseAdmin(config);
-        if (!admin.tableExists(tableName)) {
+		HBaseAdmin admin = new HBaseAdmin(config);
+        TableName tname = TableName.valueOf(tableName);
+        if (!admin.tableExists(tname)) {
             System.out.println("Creating table");
-            HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+            HTableDescriptor tableDesc = new HTableDescriptor(tname);
             HColumnDescriptor columnDesc = new HColumnDescriptor(familyName.getBytes());
             // to have compression, hadoop native shared libraries are required
             // See http://hbase.apache.org/book.html#_compressor_configuration_installation_and_use
