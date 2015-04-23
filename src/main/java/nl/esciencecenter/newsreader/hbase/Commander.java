@@ -4,6 +4,9 @@ import com.beust.jcommander.JCommander;
 
 import java.io.IOException;
 
+/**
+ * Command line parser and runs sub-commands
+ */
 public class Commander {
     private DirectoryLoader loader;
     private DirectoryDumper dumper;

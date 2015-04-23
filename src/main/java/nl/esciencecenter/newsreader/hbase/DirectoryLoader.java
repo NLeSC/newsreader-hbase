@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
+/**
+ * Loads a directory of naf files into HBase
+ */
 @Parameters(separators="=", commandDescription="Load directory of naf files into HBase")
 public class DirectoryLoader {
 

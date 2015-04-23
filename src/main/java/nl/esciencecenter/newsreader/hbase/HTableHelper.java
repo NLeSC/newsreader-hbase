@@ -18,6 +18,14 @@ public class HTableHelper {
         HTableHelper.admin = admin;
     }
 
+    /**
+     * Creates table if it does not exist.
+     *
+     * @param tableName Name of table
+     * @param familyName Name of family
+     * @param config HBase config
+     * @throws IOException When unable to connect to HBase
+     */
     public static void createTable(String tableName, String familyName, Configuration config) throws IOException {
         if (admin == null) {
             admin = new HBaseAdmin(config);
@@ -43,6 +51,15 @@ public class HTableHelper {
         }
     }
 
+    /**
+     * Retrieve a table object
+     *
+     * @param tableName Name of table
+     * @param familyName Name of family
+     * @param config HBase config
+     * @return A HTable which can be used for puts, get, scans, etc.
+     * @throws IOException When unable to connect to HBase
+     */
     public static HTable getTable(String tableName, String familyName, Configuration config) throws IOException {
         createTable(tableName, familyName, config);
         HTable table = new HTable(config, tableName);
