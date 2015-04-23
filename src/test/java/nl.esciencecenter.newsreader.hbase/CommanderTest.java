@@ -8,26 +8,24 @@ import java.io.IOException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class MainTest {
+public class CommanderTest {
 
-    private Main main;
+    private Commander commander;
     private DirectoryLoader loader;
     private DirectoryDumper dumper;
 
     @Before
     public void setUp() throws Exception {
-        main = new Main();
         loader = mock(DirectoryLoader.class);
-        main.setLoader(loader);
         dumper = mock(DirectoryDumper.class);
-        main.setDumper(dumper);
+        commander = new Commander(loader, dumper);
     }
 
     @Test
     public void testRun_load() throws IOException {
-        String[] args = {"load"};
+        String[] args = {"load", "--root=/data"};
 
-        main.main(args);
+        commander.main(args);
 
         verify(loader).run();
     }
@@ -36,7 +34,7 @@ public class MainTest {
     public void testRun_dump() throws IOException {
         String[] args = {"dump"};
 
-        main.main(args);
+        commander.main(args);
 
         verify(dumper).run();
     }

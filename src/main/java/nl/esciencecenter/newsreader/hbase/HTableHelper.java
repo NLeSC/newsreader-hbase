@@ -29,8 +29,14 @@ public class HTableHelper {
             HColumnDescriptor columnDesc = new HColumnDescriptor(familyName.getBytes());
             // to have compression, hadoop native shared libraries are required
             // See http://hbase.apache.org/book.html#_compressor_configuration_installation_and_use
+            // input 1945 files of 2.1Gb,
+            // LZ4 = 2.8Gb datadir, 43s
+            // GZ = 2.6Gb datadir, 1m12s with freezes of 1 second
+            // None = 7.2Gb, 1m1
             columnDesc.setCompressionType(Compression.Algorithm.LZ4);
             // async_wall: without 57s, with 1m5s
+            // lz4 + async = 42s
+            // lz4 + sync = 42s
             // tableDesc.setDurability(Durability.ASYNC_WAL);
             tableDesc.addFamily(columnDesc);
             admin.createTable(tableDesc);
@@ -38,7 +44,6 @@ public class HTableHelper {
     }
 
     public static HTable getTable(String tableName, String familyName, Configuration config) throws IOException {
-        TableName tname = TableName.valueOf(tableName);
         createTable(tableName, familyName, config);
         HTable table = new HTable(config, tableName);
         table.setAutoFlush(false, false);

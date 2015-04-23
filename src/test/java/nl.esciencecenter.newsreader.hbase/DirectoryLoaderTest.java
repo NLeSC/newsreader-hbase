@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,8 +40,7 @@ public class DirectoryLoaderTest {
 
     @Test
     public void testDefaultRootDirectory() {
-        String expected = "/home/stefanv/data/newsreader/2000-medium-docs-en/docs/output/";
-        assertThat(loader.getRootDirectory(), is(expected));
+        assertThat(loader.getRootDirectory(), is(nullValue()));
     }
 
     @Test

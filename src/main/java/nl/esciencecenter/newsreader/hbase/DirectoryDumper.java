@@ -12,16 +12,16 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 
-@Parameters(commandDescription="Dump list of rows in HBase column")
+@Parameters(separators="=", commandDescription="Dump list of rows in HBase column")
 public class DirectoryDumper {
 
-    @Parameter(names="-table", description="HBase table name")
+    @Parameter(names="--table", description="HBase table name")
     private String tableName = "documents";
 
-    @Parameter(names="-family", description="HBase column family name")
+    @Parameter(names="--family", description="HBase column family name")
     private String familyName = "naf";
 
-    @Parameter(names="-column", description="HBase column qualifier name")
+    @Parameter(names="--column", description="HBase column qualifier name")
     private String columnName = "annotated";
 
     private HTable table;

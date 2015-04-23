@@ -11,19 +11,19 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
-@Parameters(commandDescription="Load directory of naf files into HBase")
+@Parameters(separators="=", commandDescription="Load directory of naf files into HBase")
 public class DirectoryLoader {
 
-    @Parameter(names={"-r", "-root"}, description="Root directory")
-    private String rootDirectory = "/home/stefanv/data/newsreader/2000-medium-docs-en/docs/output/";
+    @Parameter(names="--root", description="Root directory", required=true)
+    private String rootDirectory;
 
-    @Parameter(names="-table", description="HBase table name")
+    @Parameter(names="--table", description="HBase table name")
     private String tableName = "documents";
 
-    @Parameter(names="-family", description="HBase column family name")
+    @Parameter(names="--family", description="HBase column family name")
     private String familyName = "naf";
 
-    @Parameter(names="-column", description="HBase column qualifier name")
+    @Parameter(names="--column", description="HBase column qualifier name")
     private String columnName = "annotated";
 
     private HTable table;
@@ -81,6 +81,7 @@ public class DirectoryLoader {
             }
         };
 
+        System.out.println("Loading directory: " + rootDirectory);
         Files.walkFileTree(rootPath, visitor);
     }
 
@@ -98,6 +99,4 @@ public class DirectoryLoader {
             }
         }
     }
-
-
 }
