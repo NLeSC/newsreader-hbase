@@ -1,5 +1,7 @@
 Loader and dumper for newsreader naf documents in HBase.
 
+[![Build Status](https://travis-ci.org/NLeSC/newsreader-hbase.svg)](https://travis-ci.org/NLeSC/newsreader-hbase)
+
 Build
 =====
 
