@@ -31,3 +31,18 @@ run {
         args project.args.split('\\s+')
     }
 }
+
+
+// hbase configuration files must be in classpath
+// For hardcoded config files add them to src/main/resources, so they are part of the distribution
+// To have external config file the section below was added
+// http://discuss.gradle.org/t/classpath-in-application-plugin-is-building-always-relative-to-app-home-lib-directory/2012/3
+startScripts {
+    classpath += files('conf')
+    doLast {
+        def windowsScriptFile = file getWindowsScript()
+        def unixScriptFile = file getUnixScript()
+        windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\conf', '%APP_HOME%\\conf')
+        unixScriptFile.text = unixScriptFile.text.replace('$APP_HOME/lib/conf', '$APP_HOME/conf')
+    }
+}
