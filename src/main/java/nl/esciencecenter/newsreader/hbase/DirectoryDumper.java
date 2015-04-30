@@ -24,6 +24,9 @@ public class DirectoryDumper {
     @Parameter(names="--column", description="HBase column qualifier name")
     private String columnName = "annotated";
 
+    @Parameter(names="--fetch-size", description="Number of rows to fetch for each batch")
+    private int fetchSize = 10;
+
     private HTable table;
 
     public DirectoryDumper() {
@@ -57,6 +60,14 @@ public class DirectoryDumper {
         // 10Mb
         //scan.setMaxResultSize(10 * 1000 * 1000);
         scan.addColumn(familyName.getBytes(), columnName.getBytes());
+
+        // where doing full scan so cache won't help
+        scan.setCacheBlocks(false);
+
+        // caching by default is unlimited (-1), the default won't work for us
+        // the annotated documents can be several Mb each
+        // so default to a to a small number
+        scan.setCaching(fetchSize);
 
         ResultScanner rs = table.getScanner(scan);
         try {
