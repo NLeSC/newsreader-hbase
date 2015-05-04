@@ -22,6 +22,7 @@ dependencies {
     compile 'org.apache.hadoop:hadoop-common:2.2.0'
     compile 'org.apache.hbase:hbase-client:0.98.4-hadoop2'
     compile 'com.beust:jcommander:1.48'
+    compile 'org.apache.commons:commons-compress:1.9'
 }
 
 // Allow args from `gradle run` to be send to main class

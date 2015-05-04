@@ -63,6 +63,8 @@ public class HTableHelper {
     public static HTable getTable(String tableName, String familyName, Configuration config) throws IOException {
         createTable(tableName, familyName, config);
         HTable table = new HTable(config, tableName);
+        // disable auto flush so puts are batched
+        // and flushed when write buffer size is reached
         table.setAutoFlush(false, false);
         return table;
     }
