@@ -1,6 +1,10 @@
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'jacoco'
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+    id 'idea'
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
+}
 
 compileJava {
   sourceCompatibility = 1.7
@@ -13,15 +17,22 @@ mainClassName = 'nl.esciencecenter.newsreader.hbase.Main'
 
 repositories {
     mavenCentral()
+    jcenter()
 }
+
+ext.hadoopVersion = '2.6.0'
+ext.hbaseVersion = '0.98.4-hadoop2'
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'joda-time:joda-time:2.7'
-    compile 'org.apache.hadoop:hadoop-common:2.2.0'
-    compile 'org.apache.hbase:hbase-client:0.98.4-hadoop2'
+    compile "org.apache.hadoop:hadoop-common:${hadoopVersion}"
+    compile "org.apache.hbase:hbase-client:${hbaseVersion}"
+    compile "org.apache.hbase:hbase-server:${hbaseVersion}"
+    // used for cli arguments parsing
     compile 'com.beust:jcommander:1.48'
+    // used to read bz2 files
     compile 'org.apache.commons:commons-compress:1.9'
 }
 
@@ -32,7 +43,6 @@ run {
         args project.args.split('\\s+')
     }
 }
-
 
 // hbase configuration files must be in classpath
 // For hardcoded config files add them to src/main/resources, so they are part of the distribution
@@ -46,4 +56,17 @@ startScripts {
         windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\conf', '%APP_HOME%\\conf')
         unixScriptFile.text = unixScriptFile.text.replace('$APP_HOME/lib/conf', '$APP_HOME/conf')
     }
+}
+
+shadowJar {
+    dependencies {
+        // shadowJar does not exclude the dependencies of the dependencies (transitive)
+        // and hbase jars must be passed with job
+        // so making shadow jar small is not possible
+        exclude(dependency("org.apache.hadoop:hadoop-common:${hadoopVersion}"))
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
 }
