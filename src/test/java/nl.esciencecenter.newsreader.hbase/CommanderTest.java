@@ -13,16 +13,18 @@ public class CommanderTest {
     private Commander commander;
     private DirectoryLoader loader;
     private DirectoryDumper dumper;
+    private Sizer sizer;
 
     @Before
     public void setUp() throws Exception {
         loader = mock(DirectoryLoader.class);
         dumper = mock(DirectoryDumper.class);
-        commander = new Commander(loader, dumper);
+        sizer = mock(Sizer.class);
+        commander = new Commander(loader, dumper, sizer);
     }
 
     @Test
-    public void testRun_load() throws IOException {
+    public void testRun_load() throws IOException, ClassNotFoundException, InterruptedException {
         String[] args = {"load", "--root=/data"};
 
         commander.main(args);
@@ -31,11 +33,21 @@ public class CommanderTest {
     }
 
     @Test
-    public void testRun_dump() throws IOException {
+    public void testRun_dump() throws IOException, ClassNotFoundException, InterruptedException {
         String[] args = {"dump"};
 
         commander.main(args);
 
         verify(dumper).run();
     }
+
+    @Test
+    public void testRun_sizer() throws IOException, ClassNotFoundException, InterruptedException {
+        String[] args = {"sizer"};
+
+        commander.main(args);
+
+        verify(sizer).run();
+    }
+
 }
