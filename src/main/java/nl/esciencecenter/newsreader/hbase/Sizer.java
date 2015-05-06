@@ -1,18 +1,25 @@
 package nl.esciencecenter.newsreader.hbase;
 
+import cascading.flow.FlowConnector;
+import cascading.flow.FlowDef;
+import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
+import cascading.hbase.HBaseScheme;
+import cascading.hbase.HBaseTap;
+import cascading.hbase.helper.HBaseMapToTuples;
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.property.AppProps;
+import cascading.scheme.hadoop.WritableSequenceFile;
+import cascading.tap.Tap;
+import cascading.tap.hadoop.Hfs;
+import cascading.tuple.Fields;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
+import java.util.Properties;
 
 @Parameters(separators="=", commandDescription="Map reduce job to get size of each document")
 public class Sizer {
@@ -30,29 +37,32 @@ public class Sizer {
     private String outputPath = "/tmp/sizer.out";
 
     public void run() throws IOException, ClassNotFoundException, InterruptedException {
-        Configuration config = HBaseConfiguration.create();
-        config.set("familyName", familyName);
-        config.set("columnName", columnName);
-        Job job = Job.getInstance(config);
-        job.setJarByClass(Sizer.class);     // class that contains mapper
 
-        Scan scan = new Scan();
-        scan.setCaching(10);        // 1 is the default in Scan, which will be bad for MapReduce jobs
-        scan.setCacheBlocks(false);  // don't set to true for MR jobs
-        scan.addColumn(familyName.getBytes(), columnName.getBytes());
+        Fields keyFields = new Fields( "docName" );
+        String[] familyNames = {familyName};
+        Fields[] valueFields = new Fields[]{new Fields(columnName)};
+        HBaseScheme scheme = new HBaseScheme(keyFields, familyNames, valueFields);
+        Tap source = new HBaseTap(tableName, scheme);
 
-        TableMapReduceUtil.addDependencyJars(job);
-        TableMapReduceUtil.initTableMapperJob(
-                tableName,        // input HBase table name
-                scan,             // Scan instance to control CF and attribute selection
-                SizerMapper.class,   // mapper
-                Text.class,
-                IntWritable.class,
-                job);
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
-        job.setNumReduceTasks(0);
+        Fields hbaseFields = new Fields("docName", "cf", "column", columnName);
+        Fields contentArgs = new Fields("docName", columnName);
+        Fields sizeArgs = new Fields("docName", "docSize");
 
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        Pipe pipe = new Pipe("sizeOfDoc");
+        pipe = new Each(pipe, contentArgs, new HBaseMapToTuples(hbaseFields, contentArgs));
+        pipe = new Each(pipe, contentArgs, new SizerFunction(contentArgs), Fields.REPLACE);
+
+        WritableSequenceFile outseq = new WritableSequenceFile(sizeArgs, Text.class, IntWritable.class);
+        Tap sink = new Hfs(outseq, outputPath);
+
+        FlowDef flow = FlowDef.flowDef()
+                .addSource( pipe, source )
+                .addTailSink( pipe, sink );
+
+        Properties properties = new Properties();
+        AppProps.setApplicationJarClass(properties, Sizer.class);
+        FlowConnector flowConnector = new Hadoop2MR1FlowConnector(properties);
+        flowConnector.connect( flow ).complete();
     }
 
 }
