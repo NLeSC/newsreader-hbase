@@ -21,7 +21,7 @@ repositories {
     maven{ url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '2.6.1'
+ext.cascadingVersion = '2.6.3'
 ext.hadoopVersion = '2.6.0'
 ext.hbaseVersion = '0.98.4-hadoop2'
 
@@ -68,7 +68,7 @@ shadowJar {
     dependencies {
         // shadowJar does not exclude the dependencies of the dependencies (transitive)
         // and hbase jars must be passed with job
-        // so making shadow jar small is not possible without flatteting the dependency tree
+        // so making shadow jar small is not possible without flattening the dependency tree
         exclude(dependency("org.apache.hadoop:hadoop-common:${hadoopVersion}"))
     }
 }
