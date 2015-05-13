@@ -15,12 +15,13 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.PrivilegedAction;
 
 /**
  * Loads a directory of naf files into HBase
  */
 @Parameters(separators="=", commandDescription="Load directory of naf files into HBase")
-public class DirectoryLoader {
+public class DirectoryLoader implements PrivilegedAction<Long> {
 
     @Parameter(names="--root", description="Root directory", required=true)
     private String rootDirectory;
@@ -38,6 +39,7 @@ public class DirectoryLoader {
     private long writeBufferSize = 100 * 1024 * 1024;
 
     private HTable table;
+    private long addedDocumentCounter = 0;
 
     public String getRootDirectory() {
         return rootDirectory;
@@ -74,13 +76,20 @@ public class DirectoryLoader {
         }
     }
 
-    public void run() throws IOException {
-        setup();
+    @Override
+    public Long run() {
+        try {
+            setup();
 
-        Path rootPath = Paths.get(rootDirectory);
-        walkDirectory(rootPath);
+            Path rootPath = Paths.get(rootDirectory);
+            walkDirectory(rootPath);
 
-        cleanup();
+            cleanup();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+
+        return addedDocumentCounter;
     }
 
     private void cleanup() throws IOException {
@@ -133,5 +142,6 @@ public class DirectoryLoader {
         Put put = new Put(filename.getBytes());
         put.add(familyName.getBytes(), columnName.getBytes(), content);
         table.put(put);
+        addedDocumentCounter ++;
     }
 }
