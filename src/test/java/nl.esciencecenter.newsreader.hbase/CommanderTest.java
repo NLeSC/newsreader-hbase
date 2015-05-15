@@ -11,12 +11,12 @@ import static org.mockito.Mockito.verify;
 public class CommanderTest {
 
     private Commander commander;
-    private DirectoryLoader loader;
+    private DirectoryLoaderSubCommand loader;
     private DirectoryDumper dumper;
 
     @Before
     public void setUp() throws Exception {
-        loader = mock(DirectoryLoader.class);
+        loader = mock(DirectoryLoaderSubCommand.class);
         dumper = mock(DirectoryDumper.class);
         commander = new Commander(loader, dumper);
     }

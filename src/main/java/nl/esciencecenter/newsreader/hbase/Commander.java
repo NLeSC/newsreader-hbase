@@ -8,15 +8,15 @@ import java.io.IOException;
  * Command line parser and runs sub-commands
  */
 public class Commander {
-    private DirectoryLoader loader;
+    private DirectoryLoaderSubCommand loader;
     private DirectoryDumper dumper;
 
     public Commander() {
-        loader = new DirectoryLoader();
+        loader = new DirectoryLoaderSubCommand();
         dumper = new DirectoryDumper();
     }
 
-    public Commander(DirectoryLoader loader, DirectoryDumper dumper) {
+    public Commander(DirectoryLoaderSubCommand loader, DirectoryDumper dumper) {
         this.loader = loader;
         this.dumper = dumper;
     }
