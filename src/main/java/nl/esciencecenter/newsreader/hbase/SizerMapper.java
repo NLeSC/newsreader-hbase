@@ -21,10 +21,11 @@ public class SizerMapper extends TableMapper<Text, IntWritable> {
 
     @Override
     public void map(ImmutableBytesWritable key, Result row, Context context) throws IOException, InterruptedException {
-        String content = Bytes.toString(row.getValue(familyName, columnName));
+        byte[] ba = row.getValue(familyName, columnName);
+        String content = Bytes.toString(ba);
         Text rowid = new Text(Bytes.toString(key.get()));
         // not all rows have the column filled
-        if (content == null) {
+        if (content != null) {
             IntWritable length = new IntWritable(content.length());
             context.write(rowid, length);
         }
