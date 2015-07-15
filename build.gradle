@@ -30,6 +30,7 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'joda-time:joda-time:2.7'
     compile "org.apache.hadoop:hadoop-common:${hadoopVersion}"
+    compile "org.apache.hadoop:hadoop-hdfs:${hadoopVersion}"
     compile "org.apache.hbase:hbase-client:${hbaseVersion}"
     compile "org.apache.hbase:hbase-server:${hbaseVersion}"
     // used for cli arguments parsing
@@ -50,26 +51,13 @@ run {
     }
 }
 
-// hbase configuration files must be in classpath
-// For hardcoded config files add them to src/main/resources, so they are part of the distribution
-// To have external config file the section below was added
-// http://discuss.gradle.org/t/classpath-in-application-plugin-is-building-always-relative-to-app-home-lib-directory/2012/3
-startScripts {
-    classpath += files('conf')
-    doLast {
-        def windowsScriptFile = file getWindowsScript()
-        def unixScriptFile = file getUnixScript()
-        windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\conf', '%APP_HOME%\\conf')
-        unixScriptFile.text = unixScriptFile.text.replace('$APP_HOME/lib/conf', '$APP_HOME/conf')
-    }
-}
-
 shadowJar {
     dependencies {
         // shadowJar does not exclude the dependencies of the dependencies (transitive)
         // and hbase jars must be passed with job
         // so making shadow jar small is not possible without flattening the dependency tree
         exclude(dependency("org.apache.hadoop:hadoop-common:${hadoopVersion}"))
+        exclude(dependency("org.apache.hadoop:hadoop-hdfs:${hadoopVersion}"))
     }
 }
 

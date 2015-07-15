@@ -1,5 +1,6 @@
 package nl.esciencecenter.newsreader.hbase;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.junit.Before;
@@ -13,12 +14,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class DirectoryLoaderTest {
-    private DirectoryLoader loader;
+    private DirectoryLoaderAction loader;
     private HTable table;
 
     @Before
     public void setUp() {
-        loader = new DirectoryLoader();
+        Configuration config = mock(Configuration.class);
+        loader = new DirectoryLoaderAction(config);
         table = mock(HTable.class);
         loader.setTable(table);
     }

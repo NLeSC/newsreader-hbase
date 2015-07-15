@@ -6,7 +6,6 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.io.compress.Compression;
 
 import java.io.IOException;
 
@@ -41,7 +40,10 @@ public class HTableHelper {
             // LZ4 = 2.8Gb datadir, 43s
             // GZ = 2.6Gb datadir, 1m12s with freezes of 1 second
             // None = 7.2Gb, 1m1
-            columnDesc.setCompressionType(Compression.Algorithm.LZ4);
+
+            // disable compression it is not working yet on SURFSara hbase cluster
+//            columnDesc.setCompressionType(Compression.Algorithm.LZ4);
+
             // async_wall: without 57s, with 1m5s
             // lz4 + async = 42s
             // lz4 + sync = 42s

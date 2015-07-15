@@ -36,7 +36,6 @@ public class Sizer {
     private String outputPath = "/tmp/sizer.out";
 
     public void run() throws IOException, ClassNotFoundException, InterruptedException {
-
         Fields keyFields = new Fields( "docName" );
         String[] familyNames = {familyName};
         Fields[] valueFields = new Fields[]{new Fields(columnName)};
