@@ -6,31 +6,22 @@ Build
 =====
 
 Make sure the hadoop and hbase versions in `build.gradle` file are the same as the HBase cluster. 
+Add `hbase-site.xml` to `src/main/resources` and create a jar with dependencies by executing:
 
-    ./gradlew build
+    ./gradlew shadowJar
 
 Running
 =======
 
-    ./gradlew run -Pargs="<arguments>"
-
-Or unpack distro zip/tarball from `build/distributions` directory and run with
-
-    bin/newsreader-hbase <arguments>
-
-This will connect to HBase server running on localhost.
-Connecting to another HBase cluster can be done with the distro by,
-adding the config files (eg. hbase-site.xml) to a `conf` directory (placed next to the `bin` and `lib` directories).
-
-Map reduce
-==========
-
 Initialize hadoop/hbase environment.
 
-Create a jar with dependencies included with:
+Several sub commands are available, to see the help run:
 
-    ./gradlew shadowJar
+     java -classpath `hbase classpath`:`hadoop classpath`:build/libs/newsreader-hbase-*-all.jar
+
+### Map reduce
 
 Submit job with:
 
-    hadoop jar build/libs/newsreader-hbase-1.0-all.jar sizer
+    yarn jar $PWD/newsreader-hbase-1.0-all.jar sizer
+
