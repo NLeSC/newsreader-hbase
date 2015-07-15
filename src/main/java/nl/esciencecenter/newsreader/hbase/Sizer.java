@@ -2,13 +2,10 @@ package nl.esciencecenter.newsreader.hbase;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
-import cascading.flow.FlowDef;
 import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
 import cascading.hbase.HBaseScheme;
 import cascading.hbase.HBaseTap;
-import cascading.hbase.helper.HBaseMapToTuples;
 import cascading.pipe.Each;
-import cascading.pipe.Pipe;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
@@ -16,8 +13,11 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 @Parameters(separators="=", commandDescription="Map reduce job to get size of each document")
@@ -42,30 +42,25 @@ public class Sizer {
         HBaseScheme scheme = new HBaseScheme(keyFields, familyNames, valueFields);
         Tap source = new HBaseTap(tableName, scheme);
 
-        Fields hbaseFields = new Fields("docName", "familyName", "columnName", columnName);
-        Fields contentArgs = new Fields("docName", columnName);
         Fields sizeArgs = new Fields("docName", "docSize");
 
-        Pipe pipe = new Pipe("sizeOfDoc");
-        pipe = new Each(pipe, contentArgs, new HBaseMapToTuples(hbaseFields, contentArgs));
-        pipe = new Each(pipe, contentArgs, new SizerFunction(sizeArgs), Fields.RESULTS);
+        Each sizer = new Each("size", new SizerFunction(sizeArgs));
 
 //        WritableSequenceFile outseq = new WritableSequenceFile(sizeArgs, Text.class, IntWritable.class);
         TextDelimited outseq = new TextDelimited(true, "\t");
         Tap sink = new Hfs(outseq, outputPath);
 
-        FlowDef flowDef = FlowDef.flowDef()
-                .addSource( pipe, source )
-                .addTailSink( pipe, sink );
-
+        // copy hbase config to cascading props
         Properties properties = new Properties();
-
-        properties.setProperty("hbase.zookeeper.quorum", "c6401.ambari.apache.org");
-        properties.setProperty("zookeeper.znode.parent", "/hbase-unsecure");
+        Configuration config = HBaseConfiguration.create();
+        for (Map.Entry<String, String> tuple: config) {
+            String key = tuple.getKey();
+            properties.setProperty(key, tuple.getValue());
+        }
 
         AppProps.setApplicationJarClass(properties, Sizer.class);
         FlowConnector flowConnector = new Hadoop2MR1FlowConnector(properties);
-        Flow flow = flowConnector.connect(flowDef);
+        Flow flow = flowConnector.connect(source, sink, sizer);
         flow.writeDOT("flow.dot");
         flow.complete();
     }

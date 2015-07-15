@@ -11,7 +11,7 @@ compileJava {
   targetCompatibility = 1.7
 }
 
-version = '1.0'
+version = '1.0.1'
 
 mainClassName = 'nl.esciencecenter.newsreader.hbase.Main'
 
@@ -21,9 +21,10 @@ repositories {
     maven{ url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '2.6.3'
+ext.cascadingVersion = '3.0.1'
 ext.hadoopVersion = '2.6.0'
 ext.hbaseVersion = '0.98.4-hadoop2'
+ext.cascadingHbaseVersion = '3.0.0'
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
@@ -40,7 +41,7 @@ dependencies {
     compile "cascading:cascading-core:${cascadingVersion}"
     compile "cascading:cascading-local:${cascadingVersion}"
     compile "cascading:cascading-hadoop2-mr1:${cascadingVersion}"
-    compile "cascading-hbase:cascading-hbase-hadoop2-mr1:3.0.0-wip-12"
+    compile "cascading-hbase:cascading-hbase-hadoop2-mr1:${cascadingHbaseVersion}"
 }
 
 // Allow args from `gradle run` to be send to main class
