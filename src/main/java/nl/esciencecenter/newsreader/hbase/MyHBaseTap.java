@@ -30,6 +30,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -177,6 +178,7 @@ public class MyHBaseTap extends Tap<Configuration, RecordReader, OutputCollector
         if( User.isHBaseSecurityEnabled(conf) )
         {
             JobConf jobConf = new JobConf( conf );
+            TableMapReduceUtil.initCredentials(jobConf);
             String user = loginUser.getUserName();//jobConf.getUser();
             LOG.info( "obtaining HBase token for: {}", user );
             //try
