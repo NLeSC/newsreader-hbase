@@ -6,11 +6,15 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 
 public class HTableHelper {
+	private static final Logger LOG = LoggerFactory.getLogger(DirectoryLoaderAction.class);
+	
     private static HBaseAdmin admin;
 
     public static void setAdmin(HBaseAdmin admin) {
@@ -31,7 +35,7 @@ public class HTableHelper {
         }
         TableName tname = TableName.valueOf(tableName);
         if (!admin.tableExists(tname)) {
-            System.out.println("Creating table");
+            LOG.debug("Creating table {}", tname);
             HTableDescriptor tableDesc = new HTableDescriptor(tname);
             HColumnDescriptor columnDesc = new HColumnDescriptor(familyName.getBytes());
             // to have compression, hadoop native shared libraries are required

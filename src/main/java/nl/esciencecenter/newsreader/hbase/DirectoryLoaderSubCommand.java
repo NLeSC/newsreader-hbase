@@ -5,6 +5,8 @@ import com.beust.jcommander.Parameters;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
@@ -14,6 +16,8 @@ import java.security.PrivilegedAction;
  */
 @Parameters(separators="=", commandDescription="Load directory of naf files into HBase")
 public class DirectoryLoaderSubCommand {
+	private static final Logger LOG = LoggerFactory.getLogger(DirectoryLoaderSubCommand.class);
+	
     @Parameter(names="--root", description="Root directory", required=true)
     private String rootDirectory;
 
@@ -32,16 +36,6 @@ public class DirectoryLoaderSubCommand {
     public void run() {
         Configuration config = HBaseConfiguration.create();
 
-        //System.setProperty("java.security.krb5.realm", "CUA.SURFSARA.NL");
-        //System.setProperty("java.security.krb5.kdc", "kdc.hathi.surfsara.nl");
-        System.setProperty("java.security.krb5.config", "/etc/krb5.conf");
-        System.setProperty("java.net.preferIPv4Stack", "true");
-
-        config.set("hadoop.security.authentication", "kerberos");
-        config.set("hadoop.security.authorization", "true");
-        // config.set("zookeeper.znode.parent", "/hbase-secure");
-        //config.set("hbase.rpc.engine", "org.apache.hadoop.hbase.ipc.SecureRpcEngine");
-
         UserGroupInformation.setConfiguration(config);
 
         UserGroupInformation loginUser = null;
@@ -51,11 +45,12 @@ public class DirectoryLoaderSubCommand {
             e.printStackTrace();
         }
 
-        System.out.println("Logged in as: " + loginUser.getUserName());
+        
+        LOG.debug("Logged in as: {}", loginUser.getUserName());
 
         PrivilegedAction<Long> loader = new DirectoryLoaderAction(rootDirectory, tableName, familyName, columnName, writeBufferSize, config);
         long addedDocuments = loginUser.doAs(loader);
 
-        System.out.println(addedDocuments + " documents added");
+        LOG.info("{} documents added", addedDocuments);
     }
 }

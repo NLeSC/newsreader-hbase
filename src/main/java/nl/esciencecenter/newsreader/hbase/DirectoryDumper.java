@@ -1,7 +1,7 @@
 package nl.esciencecenter.newsreader.hbase;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.HTable;
@@ -10,11 +10,11 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import java.io.IOException;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 @Parameters(separators="=", commandDescription="Dump list of rows in HBase column")
 public class DirectoryDumper {
-
     @Parameter(names="--table", description="HBase table name")
     private String tableName = "documents";
 

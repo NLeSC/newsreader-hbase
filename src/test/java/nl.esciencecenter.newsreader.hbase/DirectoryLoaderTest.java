@@ -49,7 +49,6 @@ public class DirectoryLoaderTest {
     public void testRunNaf() throws Exception {
         // TODO don't walk actual test directory
         String rootDirectory = DirectoryLoaderTest.class.getClassLoader().getResource("naf-files").getPath();
-        System.out.println(rootDirectory);
         loader.setRootDirectory(rootDirectory);
 
         loader.run();
@@ -62,7 +61,6 @@ public class DirectoryLoaderTest {
     public void testRunNafBz2() throws Exception {
         // TODO don't walk actual test directory
         String rootDirectory = DirectoryLoaderTest.class.getClassLoader().getResource("naf-files-bz2").getPath();
-        System.out.println(rootDirectory);
         loader.setRootDirectory(rootDirectory);
 
         loader.run();

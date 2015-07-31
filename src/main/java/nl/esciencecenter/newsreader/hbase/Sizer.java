@@ -6,14 +6,19 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
+import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlow;
 import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
 import cascading.hbase.HBaseScheme;
+import cascading.hbase.HBaseTap;
 import cascading.pipe.Each;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
@@ -23,7 +28,8 @@ import cascading.tuple.Fields;
 
 @Parameters(separators="=", commandDescription="Map reduce job to get size of each document")
 public class Sizer {
-
+	private static final Logger LOG = LoggerFactory.getLogger(Sizer.class);
+	
     @Parameter(names="--table", description="HBase table name")
     private String tableName = "documents";
 
@@ -41,8 +47,8 @@ public class Sizer {
         String[] familyNames = {familyName};
         Fields[] valueFields = new Fields[]{new Fields(columnName)};
         HBaseScheme scheme = new HBaseScheme(keyFields, familyNames, valueFields);
-        Tap source = new MyHBaseTap(tableName, scheme);
-
+        Tap source = new HBaseTap(tableName, scheme);
+        
         // read from tab delimited file instead of hbase 
         // Tap source = new Hfs(new TextDelimited(true, "\t"), tableName);
 
@@ -53,17 +59,16 @@ public class Sizer {
         TextDelimited outseq = new TextDelimited(true, "\t");
         Tap sink = new Hfs(outseq, outputPath);
 
-        // copy hbase config to cascading props
         Properties properties = new Properties();
-        Configuration config = HBaseConfiguration.create();
-        for (Map.Entry<String, String> tuple: config) {
-            String key = tuple.getKey();
-            properties.setProperty(key, tuple.getValue());
-        }
 
         AppProps.setApplicationJarClass(properties, Sizer.class);
         FlowConnector flowConnector = new Hadoop2MR1FlowConnector(properties);
-        Flow flow = flowConnector.connect(source, sink, sizer);
+        HadoopFlow flow = (HadoopFlow) flowConnector.connect(source, sink, sizer);
+        
+        LOG.info("Obtaining HBASE token for hbase source tap");
+        JobConf jobConf = flow.getFlowSteps().get(0).getConfig();
+        TableMapReduceUtil.initCredentials(jobConf);
+        
         flow.writeDOT("flow.dot");
         flow.complete();
     }

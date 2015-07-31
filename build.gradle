@@ -31,6 +31,10 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'joda-time:joda-time:2.7'
+    testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests'
+    testCompile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, classifier: 'tests'
+    testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests'
+
     compile "org.apache.hadoop:hadoop-common:${hadoopVersion}"
     compile "org.apache.hadoop:hadoop-hdfs:${hadoopVersion}"
     compile "org.apache.hbase:hbase-client:${hbaseVersion}"
@@ -40,7 +44,6 @@ dependencies {
     // used to read bz2 files
     compile 'org.apache.commons:commons-compress:1.9'
     compile "cascading:cascading-core:${cascadingVersion}"
-    compile "cascading:cascading-local:${cascadingVersion}"
     compile "cascading:cascading-hadoop2-mr1:${cascadingVersion}"
     compile "cascading-hbase:cascading-hbase-hadoop2-mr1:${cascadingHbaseVersion}"
 }

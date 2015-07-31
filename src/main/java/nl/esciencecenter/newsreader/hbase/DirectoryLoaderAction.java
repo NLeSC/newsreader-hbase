@@ -5,6 +5,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.RetriesExhaustedWithDetailsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,7 +18,8 @@ import java.security.PrivilegedAction;
 
 
 public class DirectoryLoaderAction implements PrivilegedAction<Long> {
-
+	private static final Logger LOG = LoggerFactory.getLogger(DirectoryLoaderAction.class);
+	
     private String rootDirectory;
     private String tableName = "documents";
     private String familyName = "naf";
@@ -103,7 +106,7 @@ public class DirectoryLoaderAction implements PrivilegedAction<Long> {
             }
         };
 
-        System.out.println("Loading directory: " + rootDirectory);
+        LOG.info("Loading directory: {}", rootDirectory);
         Files.walkFileTree(rootPath, visitor);
     }
 
@@ -119,6 +122,7 @@ public class DirectoryLoaderAction implements PrivilegedAction<Long> {
                 while (-1 != (n = bzIn.read(buffer))) {
                     bos.write(buffer, 0, n);
                 }
+                bzIn.close();
                 byte[] content = bos.toByteArray();
                 addDocumentContent(filename, content);
             } catch (IOException e) {
@@ -136,7 +140,7 @@ public class DirectoryLoaderAction implements PrivilegedAction<Long> {
     }
 
     private void addDocumentContent(String filename, byte[] content) throws InterruptedIOException, RetriesExhaustedWithDetailsException {
-        System.out.println("Inserting = " + filename);
+        LOG.trace("Inserting = {}", filename);
         Put put = new Put(filename.getBytes());
         put.add(familyName.getBytes(), columnName.getBytes(), content);
         table.put(put);
