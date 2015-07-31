@@ -24,5 +24,6 @@ public class SizerFunction  extends BaseOperation implements Function {
         Tuple result = new Tuple();
         result.add(docName);
         result.add(docContent.length());
+        functionCall.getOutputCollector().add(result);
     }
 }

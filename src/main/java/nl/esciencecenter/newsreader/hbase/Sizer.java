@@ -1,24 +1,25 @@
 package nl.esciencecenter.newsreader.hbase;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
 import cascading.hbase.HBaseScheme;
-import cascading.hbase.HBaseTap;
 import cascading.pipe.Each;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
 
 @Parameters(separators="=", commandDescription="Map reduce job to get size of each document")
 public class Sizer {
@@ -40,13 +41,15 @@ public class Sizer {
         String[] familyNames = {familyName};
         Fields[] valueFields = new Fields[]{new Fields(columnName)};
         HBaseScheme scheme = new HBaseScheme(keyFields, familyNames, valueFields);
-        Tap source = new HBaseTap(tableName, scheme);
+        Tap source = new MyHBaseTap(tableName, scheme);
+
+        // read from tab delimited file instead of hbase 
+        // Tap source = new Hfs(new TextDelimited(true, "\t"), tableName);
 
         Fields sizeArgs = new Fields("docName", "docSize");
-
-        Each sizer = new Each("size", new SizerFunction(sizeArgs));
-
-//        WritableSequenceFile outseq = new WritableSequenceFile(sizeArgs, Text.class, IntWritable.class);
+        Fields tableFields = new Fields("docName", columnName);
+        Each sizer = new Each("size", tableFields, new SizerFunction(sizeArgs), Fields.RESULTS);
+        
         TextDelimited outseq = new TextDelimited(true, "\t");
         Tap sink = new Hfs(outseq, outputPath);
 

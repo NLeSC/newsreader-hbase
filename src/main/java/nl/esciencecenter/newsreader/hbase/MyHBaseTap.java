@@ -11,6 +11,26 @@ package nl.esciencecenter.newsreader.hbase;
  * conditions, unless such conditions are required by law.
  */
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.UUID;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapred.TableOutputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cascading.flow.FlowProcess;
 import cascading.hbase.HBaseAbstractScheme;
 import cascading.hbase.HBaseScheme;
@@ -22,29 +42,6 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.mapred.TableOutputFormat;
-import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
-import org.apache.hadoop.hbase.security.User;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.UUID;
 
 /**
  * The MyHBaseTap class is a {@link Tap} subclass. It is used in conjunction with
@@ -165,47 +162,55 @@ public class MyHBaseTap extends Tap<Configuration, RecordReader, OutputCollector
 
     private void obtainToken( Configuration conf )
     {
-        conf.addResource("/etc/hadoop/conf/core-site.xml");
-        conf.addResource("/etc/hadoop/conf/hdfs-site.xml");
-        conf.addResource("/etc/hbase/conf/hbase-site.xml");
-
-        conf.set("hadoop.security.authentication", "kerberos");
-        conf.set("hadoop.security.authorization", "true");
+//        conf.addResource("/etc/hadoop/conf/core-site.xml");
+//        conf.addResource("/etc/hadoop/conf/hdfs-site.xml");
+//        conf.addResource("/etc/hbase/conf/hbase-site.xml");
+//
+//        conf.set("hadoop.security.authentication", "kerberos");
+//        conf.set("hadoop.security.authorization", "true");
         
-        try {
-        UserGroupInformation.setConfiguration(conf);
-        UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
-        if( User.isHBaseSecurityEnabled(conf) )
-        {
-            JobConf jobConf = new JobConf( conf );
-            TableMapReduceUtil.initCredentials(jobConf);
-            String user = loginUser.getUserName();//jobConf.getUser();
-            LOG.info( "obtaining HBase token for: {}", user );
-            //try
-            //{
-                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
-                user = currentUser.getUserName();
-                LOG.info("user op de andere manier: " + user);
-                //Credentials credentials = jobConf.getCredentials();
-                Credentials credentials = currentUser.getCredentials();
-                for( Token token : currentUser.getTokens() )
-                {
-                    LOG.info("Token {} is available", token);
-                    //there must be HBASE_AUTH_TOKEN exists, if not bad thing will happen, it's must be generated during job submission.
-                    if( "HBASE_AUTH_TOKEN".equalsIgnoreCase( token.getKind().toString() ) )
-                        credentials.addToken( token.getKind(), token );
-                }
-                jobConf.setCredentials(credentials);
-                jobConf.setUser(user);
-
-            }
-
-        }
-        catch( IOException e )
-        {
-            //throw new TapException( "Unable to obtain HBase auth token for " + loginUser, e );
-            e.printStackTrace();
-        }
+    	JobConf jobConf = new JobConf( conf );
+    	try {
+			TableMapReduceUtil.initCredentials(jobConf);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+//        try {
+//        UserGroupInformation.setConfiguration(conf);
+//        UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+//        if( User.isHBaseSecurityEnabled(conf) )
+//        {
+//            JobConf jobConf = new JobConf( conf );
+//            TableMapReduceUtil.initCredentials(jobConf);
+//            String user = loginUser.getUserName();//jobConf.getUser();
+//            LOG.info( "obtaining HBase token for: {}", user );
+//            //try
+//            //{
+//                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+//                user = currentUser.getUserName();
+//                LOG.info("user op de andere manier: " + user);
+//                //Credentials credentials = jobConf.getCredentials();
+//                Credentials credentials = currentUser.getCredentials();
+//                for( Token token : currentUser.getTokens() )
+//                {
+//                    LOG.info("Token {} is available", token);
+//                    //there must be HBASE_AUTH_TOKEN exists, if not bad thing will happen, it's must be generated during job submission.
+//                    if( "HBASE_AUTH_TOKEN".equalsIgnoreCase( token.getKind().toString() ) )
+//                        credentials.addToken( token.getKind(), token );
+//                }
+//                jobConf.setCredentials(credentials);
+//                jobConf.setUser(user);
+//
+//            }
+//
+//        }
+//        catch( IOException e )
+//        {
+//            //throw new TapException( "Unable to obtain HBase auth token for " + loginUser, e );
+//            e.printStackTrace();
+//        }
     }
 
     @Override
